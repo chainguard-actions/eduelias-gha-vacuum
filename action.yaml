@@ -1,0 +1,22 @@
+name: Vacuum OpenAPI Spec linter
+description: This is an OpenAPI spec linter using vacuum.
+inputs:
+  cmd:
+    description: "Vacuum command, see https://quobix.com/vacuum/"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Vacuum
+      run: |
+        curl -fsSL https://quobix.com/scripts/install_vacuum.sh -o /tmp/install_vacuum.sh
+        sh /tmp/install_vacuum.sh > /dev/null
+        rm -f /tmp/install_vacuum.sh
+      shell: bash
+    - name: Run OpenAPI Linter
+      env:
+        VACUUM_CMD: ${{ inputs.cmd }}
+      run: |
+        $VACUUM_CMD
+      shell: bash

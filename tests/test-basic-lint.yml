@@ -1,0 +1,18 @@
+name: Test basic vacuum lint
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run vacuum lint on fixture OpenAPI spec
+        id: action
+        uses: .
+        with:
+          cmd: >-
+            vacuum lint
+            $GITHUB_WORKSPACE/actions/hardened/eduelias--gha-vacuum/v0.0.1/tests/fixtures/openapi.yaml
+      - name: Assert vacuum ran successfully
+        run: |
+          echo "PASS: vacuum lint completed without error"
