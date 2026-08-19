@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v0.0.1 | [`v0.0.1`](https://github.com/chainguard-actions/eduelias-gha-vacuum/tree/v0.0.1) | — |
+| v0.0.1 | [`v0.0.1`](https://github.com/chainguard-actions/eduelias-gha-vacuum/tree/v0.0.1) | [`7b8ff44`](https://github.com/eduelias/gha-vacuum/commit/7b8ff449fb165599f95362d6da925ed33eb334e4) |
 
 ## Privacy
 
