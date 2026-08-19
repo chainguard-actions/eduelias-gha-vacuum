@@ -1,4 +1,4 @@
-name: Test basic lint of valid OpenAPI spec
+name: Test vacuum version command
 on:
   workflow_dispatch:
 
@@ -40,7 +40,7 @@ jobs:
           CURLEOF
           chmod +x /tmp/fake-curl
 
-          # Prepend /tmp to PATH so fake-curl is found first
+          # Prepend /tmp/fake-bin to PATH so fake curl is found first
           mkdir -p /tmp/fake-bin
           cp /tmp/fake-curl /tmp/fake-bin/curl
           echo "/tmp/fake-bin" >> "$GITHUB_PATH"
@@ -48,8 +48,8 @@ jobs:
       - id: action
         uses: .
         with:
-          cmd: vacuum lint "$GITHUB_WORKSPACE/tests/fixtures/openapi/petstore.yaml"
+          cmd: vacuum version
 
       - name: Assert action succeeded
         run: |
-          echo "PASS: vacuum lint completed successfully"
+          echo "PASS: vacuum version command completed successfully"

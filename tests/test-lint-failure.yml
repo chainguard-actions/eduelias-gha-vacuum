@@ -1,0 +1,74 @@
+name: Test lint failure propagation
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up fake curl and a failing vacuum stub
+        run: |
+          # Write a fake install script that installs a vacuum stub that exits non-zero
+          cat > /tmp/fake-install-vacuum-fail.sh << 'INSTALLEOF'
+          #!/bin/sh
+          set -e
+          INSTALL_DIR="/usr/local/bin"
+          cat > "$INSTALL_DIR/vacuum" << 'EOF'
+          #!/bin/sh
+          # Stub vacuum that always fails (simulates lint errors found)
+          echo "vacuum stub: lint errors found (simulated)"
+          exit 1
+          EOF
+          chmod +x "$INSTALL_DIR/vacuum"
+          echo "Fake failing vacuum installed"
+          INSTALLEOF
+          chmod +x /tmp/fake-install-vacuum-fail.sh
+
+          # Create a fake curl that serves the failing vacuum installer
+          cat > /tmp/fake-curl << 'CURLEOF'
+          #!/bin/sh
+          out=""
+          prev=""
+          for arg in "$@"; do
+            case "$prev" in
+              -o|--output) out="$arg" ;;
+            esac
+            prev="$arg"
+          done
+          case "$*" in
+            *install_vacuum*)
+              if [ -n "$out" ]; then
+                cat /tmp/fake-install-vacuum-fail.sh > "$out"
+              else
+                cat /tmp/fake-install-vacuum-fail.sh
+              fi
+              exit 0
+              ;;
+          esac
+          exec /usr/bin/curl "$@"
+          CURLEOF
+          chmod +x /tmp/fake-curl
+
+          mkdir -p /tmp/fake-bin
+          cp /tmp/fake-curl /tmp/fake-bin/curl
+          echo "/tmp/fake-bin" >> "$GITHUB_PATH"
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          cmd: vacuum lint "$GITHUB_WORKSPACE/tests/fixtures/openapi/petstore.yaml"
+
+      - name: Assert action failed as expected
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action correctly propagated lint failure"
+          else
+            echo "FAIL: expected action to fail but got outcome '$OUTCOME'"
+            exit 1
+          fi
